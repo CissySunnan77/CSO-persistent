@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>柏腾医药 - 产品展示</title>
+    <style>
+        :root {
+            --primary: #0f6e3f;
+            --primary-light: #1e8b4a;
+            --bg: #ecf9f2;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --text-light: #4a6b5b;
+            --border: #d0e8d8;
+            --shadow: 0 4px 20px rgba(15, 110, 63, 0.06);
+            --shadow-lg: 0 20px 40px rgba(15, 110, 63, 0.10);
+            --radius: 14px;
+            --radius-sm: 10px;
+            --transition: 0.25s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container { max-width: 960px; width: 100%; text-align: center; }
+
+        .header { margin-bottom: 40px; }
+        .brand { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 10px; }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 1.8rem; font-weight: 700; color: var(--primary); letter-spacing: 2px; }
+        .logo-icon { width: 42px; height: 42px; background: var(--primary); border-radius: 10px; color: #fff; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+        .brand-en { font-size: 1.1rem; font-weight: 500; color: var(--text-light); letter-spacing: 1px; }
+        .subtitle { color: var(--text-light); font-size: 0.9rem; letter-spacing: 1px; margin-top: 6px; }
+
+        .products-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+        .product-card {
+            background: var(--card-bg); border-radius: var(--radius); padding: 32px 20px 24px;
+            box-shadow: var(--shadow); border: 1px solid var(--border);
+            transition: transform var(--transition), box-shadow var(--transition);
+            cursor: default; position: relative; overflow: hidden;
+        }
+        .product-card.clickable { cursor: pointer; }
+        .product-card.clickable:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(15, 110, 63, 0.08); }
+        .product-card.non-clickable:hover { transform: none; box-shadow: var(--shadow); }
+        .product-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: 14px 14px 0 0; }
+        .card-nabumetone::before { background: #2d8a56; }
+        .card-teprenone::before { background: #4fb06d; }
+        .card-chlorhexidine::before { background: #6bbf59; }
+
+        .card-icon { font-size: 40px; margin-bottom: 14px; }
+        .card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 2px; color: #1a2e1f; }
+        .card .product-name { font-size: 0.85rem; color: var(--text-light); font-style: italic; margin-bottom: 4px; font-weight: 500; }
+        .card .en-name { font-size: 0.75rem; color: #8aa68a; font-style: italic; margin-bottom: 10px; }
+        .card .tag-line { display: inline-block; font-size: 0.78rem; padding: 5px 14px; border-radius: 15px; font-weight: 500; }
+        .tag-nabumetone { background: #e9f5ed; color: #1e6b3a; }
+        .tag-teprenone { background: #eaf7ef; color: #2d7a45; }
+        .tag-chlorhexidine { background: #eef9f0; color: #26733a; }
+
+        .footer-note { margin-top: 36px; font-size: 0.8rem; color: #7a9d80; letter-spacing: 0.5px; }
+
+        /* 模态框通用 */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 100; display: flex; align-items: center; justify-content: center;
+            padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-dialog {
+            background: #fff; border-radius: var(--radius); max-width: 700px; width: 100%;
+            box-shadow: var(--shadow-lg); position: relative; padding: 32px 28px;
+            transform: translateY(20px); transition: transform 0.3s ease;
+            max-height: 85vh; overflow-y: auto;
+        }
+        .modal-overlay.active .modal-dialog { transform: translateY(0); }
+        .modal-close {
+            position: absolute; top: 16px; right: 18px; background: #f1f5f9; border: none;
+            width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; color: #555;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s; z-index: 10;
+        }
+        .modal-close:hover { background: #e2e8f0; color: #1a1a2e; }
+        .modal-header { margin-bottom: 28px; text-align: left; padding-right: 40px; }
+        .modal-header h2 { font-size: 1.5rem; font-weight: 700; color: #1a2e1f; margin-bottom: 4px; }
+        .modal-header .en-name { font-size: 0.9rem; color: var(--text-light); font-style: italic; }
+        .modal-header .divider { width: 50px; height: 3px; background: #2d8a56; border-radius: 2px; margin-top: 12px; }
+
+        .modules-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .module-card {
+            background: #f8faf9; border: 1px solid #e0ede2; border-radius: var(--radius-sm);
+            padding: 20px 18px; text-align: left; cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit;
+        }
+        .module-card:hover { background: #fff; border-color: #b8d9c0; box-shadow: 0 4px 12px rgba(15,110,63,0.04); transform: translateY(-2px); }
+        .module-icon { font-size: 28px; width: 48px; height: 48px; background: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); flex-shrink: 0; }
+        .module-info h4 { font-size: 1rem; font-weight: 600; color: #1a2e1f; margin-bottom: 2px; }
+        .module-info p { font-size: 0.8rem; color: var(--text-light); line-height: 1.4; }
+
+        /* 三级页面样式 */
+        .sub-module-list { display: flex; flex-direction: column; gap: 20px; }
+        .sub-module-item {
+            background: #f8faf9; border: 1px solid #e0ede2; border-radius: var(--radius-sm);
+            padding: 20px; text-align: left;
+        }
+        .sub-module-item h4 { font-size: 1.1rem; font-weight: 600; color: #1a2e1f; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+        .sub-module-item p { font-size: 0.9rem; color: var(--text-light); margin-bottom: 12px; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 500; color: #1a2e1f; margin-bottom: 4px; }
+        .form-group input[type="text"] {
+            width: 100%; padding: 10px 12px; border: 1px solid #d0e8d8; border-radius: 8px;
+            font-size: 0.9rem; outline: none; transition: border 0.2s;
+        }
+        .form-group input[type="text"]:focus { border-color: #2d8a56; box-shadow: 0 0 0 3px rgba(45,138,86,0.1); }
+
+        .upload-area { margin-top: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .upload-area input[type="file"] { display: none; }
+        .upload-btn {
+            background: var(--primary); color: #fff; border: none; padding: 10px 20px;
+            border-radius: 25px; font-size: 0.9rem; cursor: pointer; transition: background 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .upload-btn:hover { background: var(--primary-light); }
+        .upload-hint { font-size: 0.8rem; color: #94a3b8; }
+        .file-name { font-size: 0.85rem; color: var(--primary); font-weight: 500; }
+        .submit-btn { background: #059669; }
+        .submit-btn:hover { background: #047857; }
+
+        .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px; }
+        .category-card {
+            background: #fff; border: 1px solid #d0e8d8; border-radius: 10px; padding: 18px 12px;
+            text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .category-card:hover { border-color: #2d8a56; box-shadow: 0 4px 12px rgba(15,110,63,0.08); transform: translateY(-2px); }
+        .category-icon { font-size: 28px; }
+        .category-card span { font-weight: 600; color: #1a2e1f; font-size: 0.95rem; }
+
+        .pathway-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; }
+        .pathway-card {
+            background: #fff; border: 1px solid #d0e8d8; border-radius: 12px; padding: 20px;
+            text-align: left;
+        }
+        .pathway-card .illustration {
+            text-align: center; font-size: 56px; margin-bottom: 12px;
+            background: #f0faf4; border-radius: 50%; width: 80px; height: 80px;
+            display: flex; align-items: center; justify-content: center;
+            margin-left: auto; margin-right: auto;
+        }
+        .pathway-card h5 { font-size: 1.05rem; color: #1a2e1f; margin-bottom: 10px; border-bottom: 2px solid #2d8a56; padding-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .pathway-card ul { list-style: none; padding-left: 0; }
+        .pathway-card li { padding: 4px 0; font-size: 0.9rem; color: var(--text-light); display: flex; gap: 6px; }
+        .pathway-card li::before { content: "•"; color: #2d8a56; font-weight: bold; }
+
+        .modal-overlay.level-3 { z-index: 200; }
+        .modal-overlay.level-4 { z-index: 300; }
+
+        @media (max-width: 700px) {
+            .products-grid { grid-template-columns: 1fr; gap: 16px; }
+            .product-card { padding: 24px 18px 18px; }
+            .header { margin-bottom: 28px; }
+            .logo { font-size: 1.5rem; }
+            .brand-en { font-size: 1rem; }
+            .modules-grid { grid-template-columns: 1fr; }
+            .modal-dialog { padding: 24px 18px; }
+            .upload-area { flex-direction: column; align-items: flex-start; }
+            .category-grid { grid-template-columns: 1fr 1fr; }
+            .pathway-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="brand">
+                <div class="logo"><span class="logo-icon">Pr</span> 柏腾医药</div>
+                <div class="brand-en">Persistent</div>
+            </div>
+            <p class="subtitle">核心产品展示</p>
+        </div>
+
+        <div class="products-grid">
+            <!-- NSAIDs - 骨科/风免/疼痛 -->
+            <div class="product-card card-nabumetone clickable" onclick="openNabumetoneDetail()">
+                <div class="card-icon">💊</div>
+                <h3>骨科/风免/疼痛</h3>
+                <p class="product-name">NSAIDs</p>
+                <p class="en-name">非甾体抗炎药</p>
+                <span class="tag-line tag-nabumetone">抗炎镇痛</span>
+            </div>
+
+            <!-- 胃粘膜保护剂 - 消化 -->
+            <div class="product-card card-teprenone non-clickable">
+                <div class="card-icon">🛡️</div>
+                <h3>消化</h3>
+                <p class="product-name">胃粘膜保护剂</p>
+                <p class="en-name">Gastric Mucosal Protectant</p>
+                <span class="tag-line tag-teprenone">胃黏膜保护</span>
+            </div>
+
+            <!-- 分类 - 感染 -->
+            <div class="product-card card-chlorhexidine non-clickable">
+                <div class="card-icon">🦷</div>
+                <h3>感染</h3>
+                <p class="product-name">分类</p>
+                <p class="en-name">Category</p>
+                <span class="tag-line tag-chlorhexidine">抗菌含漱液</span>
+            </div>
+        </div>
+        <p class="footer-note">© 柏腾医药 Persistent · 专注医药产品学术推广</p>
+    </div>
+
+    <!-- NSAIDs 二级页面 -->
+    <div class="modal-overlay" id="nabumetoneModal">
+        <div class="modal-dialog">
+            <button class="modal-close" onclick="closeNabumetoneModal()">✕</button>
+            <div class="modal-header">
+                <h2>骨科/风免/疼痛 · NSAIDs</h2>
+                <span class="en-name">非甾体抗炎药 · 学术资源中心</span>
+                <div class="divider"></div>
+            </div>
+            <div class="modules-grid">
+                <div class="module-card" onclick="openClinicalResearch()">
+                    <div class="module-icon">📊</div><div class="module-info"><h4>临床研究</h4><p>最新临床试验数据与疗效分析</p></div>
+                </div>
+                <div class="module-card" onclick="openPocketbook()">
+                    <div class="module-icon">📒</div><div class="module-info"><h4>医生病案口袋书</h4><p>典型病例与临床用药参考</p></div>
+                </div>
+                <div class="module-card">
+                    <div class="module-icon">🎙️</div><div class="module-info"><h4>学术会议</h4><p>近期学术活动与会议资料</p></div>
+                </div>
+                <div class="module-card">
+                    <div class="module-icon">📚</div><div class="module-info"><h4>文献指南库</h4><p>权威指南与核心文献汇总</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 临床研究三级页面 -->
+    <div class="modal-overlay level-3" id="clinicalResearchModal">
+        <div class="modal-dialog">
+            <button class="modal-close" onclick="closeClinicalResearch()">✕</button>
+            <div class="modal-header">
+                <h2>临床研究</h2>
+                <span class="en-name">NSAIDs · 研究项目详情</span>
+                <div class="divider"></div>
+            </div>
+            <div class="sub-module-list">
+                <div class="sub-module-item"><h4>📋 项目方案</h4><p>NSAIDs治疗骨关节炎的多中心、随机、双盲临床研究方案，包含研究设计、入排标准与评价指标。</p></div>
+                <div class="sub-module-item"><h4>📈 执行进度</h4><p>当前入组进度：78% | 数据清理阶段：进行中 | 预计锁库日期：2026年Q4</p></div>
+                <div class="sub-module-item">
+                    <h4>📁 病例上传</h4><p>请上传脱敏后的病例报告表（CRF）或相关影像资料，支持PDF/图片格式。</p>
+                    <div class="upload-area">
+                        <input type="file" id="caseUpload" accept=".pdf,.jpg,.jpeg,.png,.dicom" onchange="handleFileSelect('caseUpload','selectedCaseFileName','.upload-hint')">
+                        <button class="upload-btn" onclick="document.getElementById('caseUpload').click()">📎 选择文件</button>
+                        <button class="upload-btn submit-btn" onclick="submitCase()">✅ 提交病例</button>
+                        <span class="upload-hint">未选择文件</span>
+                        <span class="file-name" id="selectedCaseFileName"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 医生病案口袋书三级页面 (含案例库分类入口 + 上传表单) -->
+    <div class="modal-overlay level-3" id="pocketbookModal">
+        <div class="modal-dialog">
+            <button class="modal-close" onclick="closePocketbook()">✕</button>
+            <div class="modal-header">
+                <h2>医生病案口袋书</h2>
+                <span class="en-name">NSAIDs · 案例资源与规范</span>
+                <div class="divider"></div>
+            </div>
+            <div class="sub-module-list">
+                <div class="sub-module-item">
+                    <h4>📤 案例上传</h4>
+                    <p>分享典型治疗案例，支持PDF或图片格式，经审核后收录至案例库。</p>
+                    <div class="form-group">
+                        <label>上传人</label>
+                        <input type="text" id="uploaderName" placeholder="请输入姓名">
+                    </div>
+                    <div class="form-group">
+                        <label>医院</label>
+                        <input type="text" id="uploaderHospital" placeholder="请输入医院名称">
+                    </div>
+                    <div class="form-group">
+                        <label>联系方式</label>
+                        <input type="text" id="uploaderContact" placeholder="手机/邮箱">
+                    </div>
+                    <div class="upload-area">
+                        <input type="file" id="pocketUpload" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileSelect('pocketUpload','selectedPocketFileName','.pocket-hint')">
+                        <button class="upload-btn" onclick="document.getElementById('pocketUpload').click()">📎 选择文件</button>
+                        <button class="upload-btn submit-btn" onclick="submitPocketCase()">✅ 上传案例</button>
+                        <span class="upload-hint pocket-hint">未选择文件</span>
+                        <span class="file-name" id="selectedPocketFileName"></span>
+                    </div>
+                </div>
+                <div class="sub-module-item">
+                    <h4>📚 案例库</h4>
+                    <p>按科室分类浏览已收录的典型病例：</p>
+                    <div class="category-grid">
+                        <div class="category-card" onclick="openOrthoCase()">
+                            <div class="category-icon">🦴</div>
+                            <span>骨科</span>
+                        </div>
+                        <div class="category-card" onclick="alert('风湿免疫案例库建设中，敬请期待。')">
+                            <div class="category-icon">🩺</div>
+                            <span>风湿免疫</span>
+                        </div>
+                        <div class="category-card" onclick="alert('疼痛案例库建设中，敬请期待。')">
+                            <div class="category-icon">⚡</div>
+                            <span>疼痛</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="sub-module-item">
+                    <h4>📖 诊疗规范</h4>
+                    <p>基于最新指南整理的NSAIDs临床应用规范，包括适应症、用法用量及注意事项。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 骨科案例库四级页面 (含对比图示) -->
+    <div class="modal-overlay level-4" id="orthoCaseModal">
+        <div class="modal-dialog">
+            <button class="modal-close" onclick="closeOrthoCase()">✕</button>
+            <div class="modal-header">
+                <h2>骨科案例库 · NSAIDs</h2>
+                <span class="en-name">骨关节炎 vs 类风湿关节炎 诊疗要点</span>
+                <div class="divider"></div>
+            </div>
+            <div class="pathway-grid">
+                <div class="pathway-card">
+                    <div class="illustration">🦴</div>
+                    <h5>骨关节炎 (OA)</h5>
+                    <ul>
+                        <li>退行性关节病变，软骨磨损为主</li>
+                        <li>好发于膝关节、髋关节、脊柱</li>
+                        <li>晨僵通常 < 30分钟</li>
+                        <li>活动后疼痛加重，休息缓解</li>
+                        <li>放射学：关节间隙狭窄、骨赘形成</li>
+                        <li>实验室检查：RF、抗CCP阴性</li>
+                        <li>治疗：对乙酰氨基酚、NSAIDs、关节腔内注射</li>
+                    </ul>
+                </div>
+                <div class="pathway-card">
+                    <div class="illustration">🩺</div>
+                    <h5>类风湿关节炎 (RA)</h5>
+                    <ul>
+                        <li>自身免疫性炎症，滑膜炎为主</li>
+                        <li>对称性多关节炎，常见于手、腕、足</li>
+                        <li>晨僵通常 > 45分钟</li>
+                        <li>休息后疼痛加重，活动后减轻</li>
+                        <li>放射学：关节侵蚀、骨质疏松</li>
+                        <li>实验室检查：RF、抗CCP常阳性，ESR/CRP升高</li>
+                        <li>治疗：DMARDs、生物制剂、NSAIDs辅助抗炎</li>
+                    </ul>
+                </div>
+            </div>
+            <p style="margin-top:16px; color:var(--text-light); font-size:0.85rem;">NSAIDs作为非甾体抗炎药，可用于两种疾病的疼痛与炎症控制，但需根据患者情况个体化用药。</p>
+        </div>
+    </div>
+
+    <script>
+        function openNabumetoneDetail() { document.getElementById('nabumetoneModal').classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeNabumetoneModal() { document.getElementById('nabumetoneModal').classList.remove('active'); document.body.style.overflow = ''; }
+
+        function openClinicalResearch() { document.getElementById('clinicalResearchModal').classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeClinicalResearch() {
+            document.getElementById('clinicalResearchModal').classList.remove('active');
+            document.body.style.overflow = document.getElementById('nabumetoneModal').classList.contains('active') ? 'hidden' : '';
+        }
+
+        function openPocketbook() { document.getElementById('pocketbookModal').classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closePocketbook() {
+            document.getElementById('pocketbookModal').classList.remove('active');
+            document.body.style.overflow = document.getElementById('nabumetoneModal').classList.contains('active') ? 'hidden' : '';
+        }
+
+        function openOrthoCase() { document.getElementById('orthoCaseModal').classList.add('active'); }
+        function closeOrthoCase() { document.getElementById('orthoCaseModal').classList.remove('active'); }
+
+        function handleFileSelect(inputId, spanId, hintSelector) {
+            const fileInput = document.getElementById(inputId);
+            const fileNameSpan = document.getElementById(spanId);
+            const hintSpan = document.querySelector(hintSelector);
+            if (fileInput.files.length > 0) {
+                fileNameSpan.textContent = '已选择: ' + fileInput.files[0].name;
+                hintSpan.textContent = '';
+            } else {
+                fileNameSpan.textContent = '';
+                hintSpan.textContent = '未选择文件';
+            }
+        }
+
+        function submitCase() {
+            const fileInput = document.getElementById('caseUpload');
+            if (!fileInput.files.length) { alert('请先选择病例文件'); return; }
+            alert('病例已成功提交！文件已上传至服务器。');
+            fileInput.value = ''; document.getElementById('selectedCaseFileName').textContent = '';
+            document.querySelector('.upload-hint').textContent = '未选择文件';
+        }
+
+        function submitPocketCase() {
+            const name = document.getElementById('uploaderName').value.trim();
+            const hospital = document.getElementById('uploaderHospital').value.trim();
+            const contact = document.getElementById('uploaderContact').value.trim();
+            const fileInput = document.getElementById('pocketUpload');
+
+            if (!name) { alert('请填写上传人姓名'); return; }
+            if (!hospital) { alert('请填写医院名称'); return; }
+            if (!contact) { alert('请填写联系方式'); return; }
+            if (!fileInput.files.length) { alert('请选择案例文件'); return; }
+
+            alert(`案例已成功上传！\n上传人：${name}\n医院：${hospital}\n联系方式：${contact}\n审核通过后将收录至案例库。`);
+            document.getElementById('uploaderName').value = '';
+            document.getElementById('uploaderHospital').value = '';
+            document.getElementById('uploaderContact').value = '';
+            fileInput.value = '';
+            document.getElementById('selectedPocketFileName').textContent = '';
+            document.querySelector('.pocket-hint').textContent = '未选择文件';
+        }
+
+        document.getElementById('nabumetoneModal').addEventListener('click', function(e) { if (e.target === this) closeNabumetoneModal(); });
+        document.getElementById('clinicalResearchModal').addEventListener('click', function(e) { if (e.target === this) closeClinicalResearch(); });
+        document.getElementById('pocketbookModal').addEventListener('click', function(e) { if (e.target === this) closePocketbook(); });
+        document.getElementById('orthoCaseModal').addEventListener('click', function(e) { if (e.target === this) closeOrthoCase(); });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const ortho = document.getElementById('orthoCaseModal');
+                const pocket = document.getElementById('pocketbookModal');
+                const clinical = document.getElementById('clinicalResearchModal');
+                const second = document.getElementById('nabumetoneModal');
+                if (ortho.classList.contains('active')) closeOrthoCase();
+                else if (pocket.classList.contains('active')) closePocketbook();
+                else if (clinical.classList.contains('active')) closeClinicalResearch();
+                else if (second.classList.contains('active')) closeNabumetoneModal();
+            }
+        });
+    </script>
+</body>
+</html>
