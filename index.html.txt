@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>柏腾医药 - 病例上传管理</title>
+    <style>
+        :root {
+            --primary: #0a4c6e;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --text-light: #5a6c7d;
+            --border: #e2e8f0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .refresh-btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+        .refresh-btn:hover {
+            background: #1a6d96;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .card-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        .stats {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            background: #f1f5f9;
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 14px 20px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.9rem;
+        }
+        th {
+            background: #f8fafc;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover td {
+            background: #fafbfc;
+        }
+        .file-name {
+            color: var(--primary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .file-icon {
+            font-size: 1.2rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #a0aec0;
+        }
+
+        @media (max-width: 700px) {
+            th, td {
+                padding: 12px 14px;
+                font-size: 0.8rem;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <span class="logo-icon">P</span> 柏腾医药 · 病例管理后台
+            </div>
+            <button class="refresh-btn" onclick="loadFileList()">🔄 刷新列表</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>📁 已上传病例文件</h2>
+                <span class="stats" id="fileCount">共 0 个文件</span>
+            </div>
+            <div id="fileTableContainer">
+                <!-- 动态加载文件列表 -->
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>仅供内部授权人员使用 · 柏腾医药 Persistent</p>
+        </div>
+    </div>
+
+    <script>
+        // 模拟已上传文件数据（实际应从后端API获取）
+        const mockFiles = [
+            {
+                id: 1,
+                name: '病例报告_张某_20260701.pdf',
+                size: '2.3 MB',
+                uploadTime: '2026-07-01 14:32:10',
+                type: 'pdf'
+            },
+            {
+                id: 2,
+                name: '膝关节影像_李某_20260628.jpg',
+                size: '1.1 MB',
+                uploadTime: '2026-06-28 09:15:44',
+                type: 'image'
+            },
+            {
+                id: 3,
+                name: '胃镜报告_王某_20260625.pdf',
+                size: '3.8 MB',
+                uploadTime: '2026-06-25 16:50:22',
+                type: 'pdf'
+            }
+        ];
+
+        function renderFileList(files) {
+            const container = document.getElementById('fileTableContainer');
+            const countSpan = document.getElementById('fileCount');
+            
+            if (!files || files.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>暂无已上传的病例文件</p>
+                    </div>
+                `;
+                countSpan.textContent = '共 0 个文件';
+                return;
+            }
+
+            countSpan.textContent = `共 ${files.length} 个文件`;
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>文件名</th>
+                            <th>类型</th>
+                            <th>大小</th>
+                            <th>上传时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            files.forEach(file => {
+                const icon = file.type === 'pdf' ? '📄' : '🖼️';
+                const badgeText = file.type === 'pdf' ? 'PDF' : '图片';
+                html += `
+                    <tr>
+                        <td>
+                            <span class="file-name">
+                                <span class="file-icon">${icon}</span>
+                                ${file.name}
+                            </span>
+                        </td>
+                        <td><span class="badge">${badgeText}</span></td>
+                        <td>${file.size}</td>
+                        <td>${file.uploadTime}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function loadFileList() {
+            // 实际部署时，此处应发起 fetch 请求到后端 API
+            // 例如：fetch('/api/files').then(res => res.json()).then(data => renderFileList(data));
+            
+            // 目前使用模拟数据演示
+            renderFileList(mockFiles);
+        }
+
+        // 页面加载时自动获取文件列表
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFileList();
+        });
+    </script>
+</body>
+</html>
